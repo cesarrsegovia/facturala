@@ -1,0 +1,26 @@
+# Dependencias
+/node_modules
+
+# Compilados
+/dist
+/build
+
+# Variables de entorno (¡NUNCA commitear secretos!)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Tests
+/coverage
+
+# Editores / OS
+.DS_Store
+.idea
+*.swp
+
+# NestJS
+.cache
