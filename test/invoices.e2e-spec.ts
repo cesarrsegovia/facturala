@@ -106,4 +106,31 @@ describe('Invoices (e2e)', () => {
     const res = await request(app.getHttpServer()).get('/api/invoices');
     expect(res.status).toBe(401);
   });
+
+  describe('POST /api/invoices/emit', () => {
+    it('retorna 400 si AFIP no está configurado', async () => {
+      const patients = await request(app.getHttpServer())
+        .get('/api/patients')
+        .set('Authorization', `Bearer ${token}`);
+
+      const res = await request(app.getHttpServer())
+        .post('/api/invoices/emit')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          patientId: patients.body[0].id,
+          amount: 1000,
+          serviceDate: '2026-06-28',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toContain('AFIP no está configurado');
+    });
+
+    it('retorna 401 sin token', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/invoices/emit')
+        .send({ patientId: invoiceId, amount: 1000, serviceDate: '2026-06-28' });
+      expect(res.status).toBe(401);
+    });
+  });
 });

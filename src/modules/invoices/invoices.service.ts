@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
@@ -179,7 +180,7 @@ export class InvoicesService implements IInvoiceEmitter {
       .getOne();
     if (!professional) throw new NotFoundException('Professional not found');
     if (!professional.afipCert || !professional.afipKey || !professional.puntoVenta) {
-      throw new Error(
+      throw new BadRequestException(
         'AFIP no está configurado: subí certificado, clave y punto de venta desde el panel',
       );
     }

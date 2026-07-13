@@ -1,7 +1,9 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
+  Post,
   Query,
   Res,
   UseGuards,
@@ -20,6 +22,8 @@ import { Professional } from '../professionals/professional.entity';
 import { InvoicesService } from './invoices.service';
 import { Invoice } from './invoice.entity';
 import type { InvoiceStatus } from './invoice.entity';
+import { EmitInvoiceDto } from './dto/emit-invoice.dto';
+import type { EmittedInvoice } from '../../common/interfaces/invoice-emitter.interface';
 
 @ApiTags('Invoices')
 @Controller('invoices')
@@ -36,6 +40,24 @@ export class InvoicesController {
     @Query('status') status?: InvoiceStatus,
   ): Promise<Invoice[]> {
     return this.invoicesService.findAll(pro.id, status);
+  }
+
+  @Post('emit')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Emite una factura manualmente (panel / prueba en homologación)' })
+  @ApiResponse({ status: 201, description: 'Factura emitida (o PENDING si AFIP no responde)' })
+  @ApiResponse({ status: 400, description: 'AFIP no configurado o datos inválidos' })
+  emitManually(
+    @CurrentProfessional() pro: Professional,
+    @Body() dto: EmitInvoiceDto,
+  ): Promise<EmittedInvoice> {
+    return this.invoicesService.emit({
+      professionalId: pro.id,
+      patientId: dto.patientId,
+      amount: dto.amount,
+      serviceDate: dto.serviceDate,
+    });
   }
 
   @Get(':id/pdf')
