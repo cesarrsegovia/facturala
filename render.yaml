@@ -1,0 +1,35 @@
+# Blueprint de Render: 1 web service (API + SPA) + PostgreSQL.
+# En Render: New → Blueprint → apuntar a este repo.
+services:
+  - type: web
+    name: facturala
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build:all
+    startCommand: npm run start:prod
+    healthCheckPath: /docs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_SYNC # crea el esquema en el primer deploy; poner en false después
+        value: 'true'
+      - key: DATABASE_URL # connection string de Neon (pooled)
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY # 64 chars hex — generar con: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_FROM
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: AFIP_SDK_ACCESS_TOKEN
+        sync: false
+      - key: APP_URL # setear con la URL final: https://facturala.onrender.com
+        sync: false

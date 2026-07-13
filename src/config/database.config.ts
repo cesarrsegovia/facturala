@@ -6,7 +6,9 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
  *
  * Se registra bajo el namespace "database" y se lee con "config.get)'database'".
  * - `synchronize` solo en desarrollo: crea/actualiza tablas desde las entidades.
- *  En produccion se usan migraciones (nunca synchronize, riesgo de perdida de datos)
+ *  En produccion se usan migraciones (nunca synchronize, riesgo de perdida de datos).
+ *  Excepción MVP: DB_SYNC=true lo habilita en el primer deploy para crear el
+ *  esquema inicial; apagarlo apenas existan las tablas.
  * -  `ssl` se exige en produccion (railway) pero no en local
  */
 
@@ -14,9 +16,12 @@ export default registerAs('database', (): TypeOrmModuleOptions => ({
   type: 'postgres',
   url: process.env.DATABASE_URL,
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  synchronize: process.env.NODE_ENV !== 'production',
+  synchronize:
+    process.env.NODE_ENV !== 'production' || process.env.DB_SYNC === 'true',
+  // SSL en producción (Render/Railway lo requieren); DB_SSL=false lo apaga
+  // para smoke tests locales en modo prod contra el Postgres de Docker.
   ssl:
-    process.env.NODE_ENV === 'production'
+    process.env.NODE_ENV === 'production' && process.env.DB_SSL !== 'false'
       ? { rejectUnauthorized: false }
       : false,
 }));
