@@ -32,10 +32,14 @@ export class NlpService {
   private readonly model: string;
 
   constructor(private readonly config: ConfigService) {
-    this.client = new OpenAI({
-      apiKey: this.config.getOrThrow<string>('OPENAI_API_KEY'),
-    });
-    this.model = this.config.get<string>('OPENAI_MODEL') ?? 'gpt-4o-mini';
+    // trim(): un espacio o salto de línea pegado en el panel de env vars
+    // rompe el header Authorization con un 401 muy difícil de diagnosticar.
+    const apiKey = this.config.getOrThrow<string>('OPENAI_API_KEY').trim();
+    this.client = new OpenAI({ apiKey });
+    this.model = (this.config.get<string>('OPENAI_MODEL') ?? 'gpt-4o-mini').trim();
+    this.logger.log(
+      `OpenAI listo: key ${apiKey.slice(0, 7)}… (${apiKey.length} chars), modelo ${this.model}`,
+    );
   }
 
   async extractInvoiceData(
